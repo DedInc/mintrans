@@ -1,1 +1,1 @@
-from .mintrans import *
+from .mintrans import BingTranslator
