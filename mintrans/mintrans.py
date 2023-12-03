@@ -1,5 +1,6 @@
 import requests
 import re
+import time
 import random
 
 class BingTranslator:
@@ -41,3 +42,72 @@ class BingTranslator:
         else:
             return response[0]
         return response
+
+class RateLimitException(Exception):
+    pass
+
+class DeepLTranslator:
+    def __init__(self):
+        pass
+
+    def translate(self, text, from_lang, to_lang):
+        json = {
+    "jsonrpc": "2.0",
+    "method": "LMT_handle_jobs",
+    "params": {
+        "jobs": [{
+            "kind": "default",
+            "sentences": [{
+                "text": text,
+                "id": 1,
+                "prefix": ""
+            }],
+            "raw_en_context_before": [],
+            "raw_en_context_after": [],
+            "preferred_num_beams": 4
+        }],
+        "lang": {
+            "target_lang": to_lang.upper(),
+            "preference": {
+                "weight": {},
+                "default": "default"
+            },
+            "source_lang_computed": from_lang.upper()
+        },
+        "priority": 1,
+        "commonJobParams": {
+            "regionalVariant": "en-US",
+            "mode": "translate",
+            "textType": "plaintext",
+            "browserType": 1
+        },
+        "timestamp": round(time.time() * 1.5)
+    },
+    "id": random.randint(100000000, 9999999999)
+}
+        r = requests.post('https://www2.deepl.com/jsonrpc?method=LMT_handle_jobs', json=json)
+        try:
+            translated_text = r.json()['result']['translations'][-1]['beams'][-1]['sentences'][-1]['text']
+            return translated_text
+        except KeyError:
+            raise RateLimitException('Rate limit error!')
+
+class GoogleTranslator:
+    def __init__(self):
+        pass
+
+    def translate(self, text, from_lang, to_lang):
+        url = 'https://translate.googleapis.com/translate_a/single'
+
+        params = {
+        'client': 'gtx',
+        'sl': 'auto',
+        'tl': to_lang,
+        'hl': from_lang,
+        'dt': ['t', 'bd'],
+        'dj': '1',
+        'source': 'popup5',
+        'q': text
+        }
+
+        return requests.get(url, params=params).json()
