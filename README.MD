@@ -1,50 +1,57 @@
-# 🗺️ mintrans - A translation API wrapper 🗺️
+# mintrans
 
-mintrans is a free API wrapper that utilizes Bing, DeepL, and Google Translate for translation purposes. 🤖
+A simple Python wrapper for Bing, DeepL, and Google Translate.
 
-## 💡 How to use 💡
+This library allows you to use these translation services without official API keys by utilizing their web interfaces/public endpoints.
 
-```python 
+**Note:** Since this relies on scraping or undocumented endpoints, stability depends on the providers not changing their frontend or blocking requests. DeepL is particularly strict with rate limiting.
+
+## Installation
+
+```bash
+pip install mintrans
+```
+
+## Usage
+
+Basic usage for all three supported engines.
+
+```python
 from mintrans import BingTranslator, DeepLTranslator, GoogleTranslator
 from mintrans import RateLimitException
 
-text = 'Hello World!'
-from_lang = 'en'  
-to_lang = 'fr'
+text = 'Hello World'
+source = 'en'
+target = 'fr'
 
-# Bing Translator
-bing_translator = BingTranslator()  
-bing_translation = bing_translator.translate(text, from_lang, to_lang)
-print(bing_translation)
+# 1. Bing
+bing = BingTranslator()
+print("Bing:", bing.translate(text, source, target))
 
-# DeepL Translator  
-deepl_translator = DeepLTranslator()
+# 2. Google
+google = GoogleTranslator()
+print("Google:", google.translate(text, source, target))
+
+# 3. DeepL
+# DeepL is more prone to IP blocks and rate limits.
+deepl = DeepLTranslator()
+
 try:
-	deepl_translation = deepl_translator.translate(text, from_lang, to_lang)
-	print(deepl_translation)
+    result = deepl.translate(text, source, target)
+    print("DeepL:", result)
 except RateLimitException:
-	print('Limit of DeepL Translator reached!')
-
-# Google Translator
-google_translator = GoogleTranslator()  
-google_translation = google_translator.translate(text, from_lang, to_lang)
-print(google_translation)
+    print("DeepL rate limit reached.")
+except Exception as e:
+    print(f"DeepL error: {e}")
 ```
 
-## 🔑 Features 🔑
+## Supported Engines
 
-- Bing, DeepL and Google translators for more translation options!
-- Easy switching between translators.
-- Supports 100+ languages across translators. 🌍
+*   **Bing**: Generally stable.
+*   **Google**: Standard web translation.
+*   **DeepL**: High quality, but very low tolerance for repeated requests from the same IP.
 
-## 🏆 Examples 🏆
+## Notes
 
-```python
-text = 'This is a longer text to test the translation.'
-
-bing_translation = bing_translator.translate(text, 'en', 'es') 
-
-deepl_translation = deepl_translator.translate(text, 'en', 'de')
-
-google_translation = google_translator.translate(text, 'en', 'fr')  
-```
+*   Language codes follow standard ISO 639-1 format (e.g., `en`, `fr`, `es`, `ja`).
+*   Not recommended for high-volume production use due to the lack of official API guarantees.
